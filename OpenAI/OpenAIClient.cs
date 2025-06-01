@@ -27,7 +27,7 @@ public class OpenAIClient
             { fileContent, "file", filename }
         };
 
-        var response = await _http.PostAsync("files", form).ConfigureAwait(false);
+        var response = await _http.PostAsync("/files", form).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
@@ -46,7 +46,12 @@ public class OpenAIClient
             CompletionWindow = completionWindow
         };
 
-        var response = await _http.PostAsJsonAsync("batches", request, OpenAISerializerContext.Default.CreateBatchRequest).ConfigureAwait(false);
+        var response = await _http.PostAsJsonAsync("/batches", request, OpenAISerializerContext.Default.CreateBatchRequest).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"OpenAI API Error: {response.StatusCode} - {error}");
+        }
 
         return await response.Content.ReadFromJsonAsync(OpenAISerializerContext.Default.BatchStatus).ConfigureAwait(false);
     }
