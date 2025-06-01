@@ -27,12 +27,16 @@ public class OpenAIClient
             { fileContent, "file", filename }
         };
 
+        Console.WriteLine($"Attempting to upload file to OpenAI...");
+
         var response = await _http.PostAsync("files", form).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
             throw new Exception($"OpenAI API Error: {response.StatusCode} - {error}");
         }
+
+        Console.WriteLine($"Response received from OpenAI: {response.StatusCode}");
 
         return await response.Content.ReadFromJsonAsync(OpenAISerializerContext.Default.FileResponse).ConfigureAwait(false);
     }
