@@ -13,7 +13,7 @@ public class OpenAIClient
     public OpenAIClient(string apiKey)
     {
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-        _http.BaseAddress = new Uri("https://api.openai.com/v1", UriKind.Absolute);
+        _http.BaseAddress = new Uri("https://api.openai.com/v1/", UriKind.Absolute);
     }
 
     public async Task<FileResponse?> CreateFileAsync(string purpose, string filename, byte[] content)
@@ -27,7 +27,7 @@ public class OpenAIClient
             { fileContent, "file", filename }
         };
 
-        var response = await _http.PostAsync("/files", form).ConfigureAwait(false);
+        var response = await _http.PostAsync("files", form).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
@@ -46,7 +46,7 @@ public class OpenAIClient
             CompletionWindow = completionWindow
         };
 
-        var response = await _http.PostAsJsonAsync("/batches", request, OpenAISerializerContext.Default.CreateBatchRequest).ConfigureAwait(false);
+        var response = await _http.PostAsJsonAsync("batches", request, OpenAISerializerContext.Default.CreateBatchRequest).ConfigureAwait(false);
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
