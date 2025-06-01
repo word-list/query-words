@@ -1,6 +1,7 @@
 
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using Amazon.Runtime.Internal.Util;
 using WordList.Processing.QueryWords.OpenAI.Models;
 
 namespace WordList.Processing.QueryWords.OpenAI;
@@ -17,13 +18,22 @@ public class OpenAIClient
 
     public async Task<FileResponse?> CreateFileAsync(string purpose, string filename, byte[] content)
     {
-        var form = new MultipartFormDataContent("---")
+        using var fileContent = new ByteArrayContent(content);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+
+        using var form = new MultipartFormDataContent
         {
             { new StringContent(purpose), "purpose" },
-            { new ByteArrayContent(content), "file", filename }
+            { fileContent, "file", filename }
         };
 
         var response = await _http.PostAsync("files", form).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"OpenAI API Error: {response.StatusCode} - {error}");
+        }
+
         return await response.Content.ReadFromJsonAsync(OpenAISerializerContext.Default.FileResponse).ConfigureAwait(false);
     }
 
