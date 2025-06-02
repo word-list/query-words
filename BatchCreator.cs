@@ -16,6 +16,7 @@ public class BatchCreator
     protected string BatchesTableName { get; set; }
     protected string PromptsTableName { get; set; }
     protected int MaxTries { get; set; } = 3;
+    protected string OpenAIModelName { get; set; }
 
     public BatchCreator(string apiKey, ILambdaLogger logger, DynamoDBContext db)
     {
@@ -27,9 +28,12 @@ public class BatchCreator
 
         PromptsTableName = Environment.GetEnvironmentVariable("PROMPTS_TABLE_NAME")
             ?? throw new Exception("PROMPTS_TABLE_NAME must be set");
+
+        OpenAIModelName = Environment.GetEnvironmentVariable("OPENAI_MODEL_NAME")
+            ?? throw new Exception("OPENAI_MODEL_NAME must be set");
     }
 
-    private static string GetRequestInputJson(string prompt) =>
+    private string GetRequestInputJson(string prompt) =>
         JsonHelpers.Serialize(
              new BatchRequestInput
              {
@@ -38,7 +42,7 @@ public class BatchCreator
                  Url = "/v1/chat/responses",
                  Body = new ResponsesRequest
                  {
-                     Model = "chatgpt-4o",
+                     Model = OpenAIModelName,
                      Input = prompt
                  }
              }, OpenAISerializerContext.Default.BatchRequestInput);
