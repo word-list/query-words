@@ -2,7 +2,8 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.Lambda.Core;
 using WordList.Processing.QueryWords.Models;
 using WordList.Processing.QueryWords.OpenAI;
-using WordList.Processing.QueryWords.OpenAI.Models;
+
+using WordList.Common.OpenAI.Models;
 
 namespace WordList.Processing.QueryWords;
 

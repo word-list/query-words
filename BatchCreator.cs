@@ -1,9 +1,9 @@
 using Amazon.Lambda.Core;
-using WordList.Processing.QueryWords.OpenAI.Models;
-using System.Text;
-using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2.DataModel;
 using WordList.Processing.QueryWords.Models;
+
+using WordList.Common.OpenAI;
+using WordList.Common.OpenAI.Models;
 
 namespace WordList.Processing.QueryWords.OpenAI;
 
@@ -33,9 +33,8 @@ public class BatchCreator
             ?? throw new Exception("OPENAI_MODEL_NAME must be set");
     }
 
-    private string GetRequestInputJson(string prompt) =>
-        JsonHelpers.Serialize(
-             new BatchRequestInput
+    private BatchRequestItem GetRequestItem(string prompt) =>
+             new BatchRequestItem
              {
                  CustomId = Guid.NewGuid().ToString(),
                  Method = "POST",
@@ -45,7 +44,7 @@ public class BatchCreator
                      Model = OpenAIModelName,
                      Input = prompt
                  }
-             }, OpenAISerializerContext.Default.BatchRequestInput);
+             };
 
     private async Task WriteBatchRecordAsync(Batch batch, string? newStatus = null)
     {
@@ -133,11 +132,10 @@ public class BatchCreator
                 return null;
             }
 
-            var promptJsons = prompts.Select(prompt => GetRequestInputJson(prompt.Text));
-            var fileContent = Encoding.UTF8.GetBytes(string.Join('\n', promptJsons));
+            var promptItems = prompts.Select(prompt => GetRequestItem(prompt.Text)).ToArray();
 
             await WriteBatchRecordAsync(batch, "Uploading").ConfigureAwait(false);
-            var fileInfo = await _openAI.CreateFileAsync("batch", "prompt.jsonl", fileContent);
+            var fileInfo = await _openAI.CreateFileAsync("prompt.jsonl", promptItems);
             if (fileInfo is null) throw new Exception("Failed to create batch file for an unknown reason");
 
             Logger.LogInformation($"Uploaded batch file has ID '{fileInfo.Id}'");
@@ -166,11 +164,3 @@ public class BatchCreator
     }
 }
 
-[JsonSerializable(typeof(BatchRequestInput))]
-[JsonSerializable(typeof(ResponsesRequest))]
-[JsonSerializable(typeof(FileResponse))]
-[JsonSerializable(typeof(CreateBatchRequest))]
-[JsonSerializable(typeof(BatchStatus))]
-public partial class OpenAISerializerContext : JsonSerializerContext
-{
-}
