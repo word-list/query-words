@@ -31,7 +31,6 @@ jobs:
                   --username ${{ github.actor }} \
                   --password ${{ secrets.GITHUB_TOKEN }}
 
-
             - name: Restore Dependencies
               run: dotnet restore
 
