@@ -4,6 +4,7 @@ using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using WordList.Processing.QueryWords.Models;
+using WordList.Common.Json;
 
 namespace WordList.Processing.QueryWords;
 
