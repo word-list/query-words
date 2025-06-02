@@ -39,7 +39,7 @@ public class BatchCreator
              {
                  CustomId = Guid.NewGuid().ToString(),
                  Method = "POST",
-                 Url = "/v1/chat/responses",
+                 Url = "/v1/responses",
                  Body = new ResponsesRequest
                  {
                      Model = OpenAIModelName,
