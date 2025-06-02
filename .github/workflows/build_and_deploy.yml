@@ -27,6 +27,7 @@ jobs:
             - name: Authenticate Nuget
               run: |
                 dotnet nuget add source "https://nuget.pkg.github.com/word-list/index.json" \
+                  --store-password-in-clear-text \
                   --name "GitHub" \
                   --username ${{ github.actor }} \
                   --password ${{ secrets.GITHUB_TOKEN }}
