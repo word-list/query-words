@@ -135,14 +135,16 @@ public class BatchCreator
             var promptItems = prompts.Select(prompt => GetRequestItem(prompt.Text)).ToArray();
 
             await WriteBatchRecordAsync(batch, "Uploading").ConfigureAwait(false);
-            var fileInfo = await _openAI.CreateFileAsync("prompt.jsonl", promptItems);
-            if (fileInfo is null) throw new Exception("Failed to create batch file for an unknown reason");
+            var fileInfo = await _openAI.CreateFileAsync("prompt.jsonl", promptItems)
+                ?? throw new Exception("Failed to create batch file for an unknown reason");
 
             Logger.LogInformation($"Uploaded batch file has ID '{fileInfo.Id}'");
 
             await WriteBatchRecordAsync(batch, "Creating").ConfigureAwait(false);
-            var batchStatus = await _openAI.CreateBatchAsync(fileInfo.Id, "/v1/responses");
+            var batchStatus = await _openAI.CreateBatchAsync(fileInfo.Id, "/v1/responses")
+                ?? throw new Exception("Failed to create the OpenAI batch for an unknown reason");
 
+            batch.OpenAIBatchId = batchStatus.Id;
             await WriteBatchRecordAsync(batch, "Waiting").ConfigureAwait(false);
 
             return batchStatus;
