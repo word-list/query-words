@@ -34,6 +34,7 @@ The lambda uses the following environment variables:
 |--------------------|----------------------------------------------------|
 | BATCHES_TABLE_NAME | Name of the table batch information is stored in.  |
 | PROMPTS_TABLE_NAME | Name of the table prompt information is stored in. |
+| OPENAI_API_KEY     | API key for accessing the OpenAI API.              |
 | OPENAI_MODEL_NAME  | Name of the OpenAI model being used.               |
 
 ## Common Packages
