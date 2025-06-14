@@ -5,6 +5,7 @@ using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using WordList.Processing.QueryWords.Models;
 using WordList.Common.Json;
+using WordList.Common.Messaging;
 
 namespace WordList.Processing.QueryWords;
 
@@ -12,33 +13,22 @@ public class Function
 {
     public static async Task<string> FunctionHandler(SQSEvent input, ILambdaContext context)
     {
-        context.Logger.LogInformation($"Entering QueryWords FunctionHandler with {input.Records.Count} message(s)");
+        var log = new LambdaContextLogger(context);
 
-        var incomingMessages =
-                input.Records.Select(record =>
-                {
-                    try
-                    {
-                        return JsonHelpers.Deserialize(record.Body, LambdaFunctionJsonSerializerContext.Default.QueryWordsMessage);
-                    }
-                    catch (Exception)
-                    {
-                        context.Logger.LogWarning($"Ignoring invalid message: {record.Body}");
-                        return null;
-                    }
-                })
-                .Where(message => message is not null);
+        log.Info($"Entering QueryWords FunctionHandler with {input.Records.Count} message(s)");
+
+        var incomingMessages = MessageQueues.QueryWords.Receive(input, log);
 
         var querier = new WordQuerier(context.Logger);
 
-        foreach (var message in incomingMessages)
+        foreach (var message in incomingMessages.Where(msg => msg is not null))
         {
-            querier.Add(message!.Word);
+            querier.Add(message.Word);
         }
 
         await querier.CreateAllBatchQueriesAsync().ConfigureAwait(false);
 
-        return "";
+        return "ok";
     }
 
     public static async Task Main()
@@ -52,7 +42,6 @@ public class Function
 
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(SQSEvent))]
-[JsonSerializable(typeof(QueryWordsMessage))]
 public partial class LambdaFunctionJsonSerializerContext : JsonSerializerContext
 {
 }
