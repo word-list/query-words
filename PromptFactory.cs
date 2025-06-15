@@ -5,20 +5,20 @@ namespace WordList.Processing.QueryWords;
 public static class PromptFactory
 {
     private static string s_prompt =
-@"You will be given a list of words. For each word, generate a line with the following fields, separated by commas:
-  
-1. the word  
-2. offensiveness - an integer from 0 to 5. Use 0 if the word is entirely inoffensive. Only use a rating above 0 if the word is widely recognized in everyday language as a profanity, slur, or as inherently derogatory.  
-3. commonness - an integer from 0 to 5, where 0 means extremely rare or never used, and 5 means extremely common in everyday language.  
-4. sentiment - an integer from -5 to 5 (where -5 is extremely negative, 0 is neutral, and 5 is extremely positive). This score reflects the emotional tone of the word only.  
-5. formality - an integer from 0 to 5, where 0 indicates extremely informal (slang, casual conversation) and 5 indicates highly formal (academic, legal, or technical language).  
-6. cultural sensitivity - an integer from 0 to 5, where 0 indicates that the word is potentially culturally insensitive or carries negative cultural stereotypes, and 5 indicates that the word is culturally neutral or widely acceptable across cultures.  
-7. figurativeness - an integer from 0 to 5, where 0 indicates a strictly literal use and 5 indicates an almost exclusively metaphorical use.  
-8. complexity - an integer from 0 to 5, where 0 indicates a simple, easily understood word and 5 indicates high conceptual or structural complexity.  
-9. political - an integer from 0 to 5, where 0 indicates that the word is not associated with political ideology or discourse, and 5 indicates that the word is highly politicized or frequently used in political contexts.  
-10. word types - use one or more of: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article. Separate multiple categories with a ""/"" (forward slash). If the word is not valid, use ""invalid"" and leave all numerical scores as 0.
+@"You are provided with a list of words. For each word, output exactly one CSV line with the following 10 fields, in the order given, separated by commas:
 
-Process every word in the list exactly once, in the order given, without adding headers, explanations, extra spaces, or additional formatting.
+1. Word: The original word.
+2. Offensiveness: An integer from 0 to 5. Use 0 if the word is completely inoffensive; use a number greater than 0 only if it is widely recognized as profanity, a slur, or inherently derogatory.
+3. Commonness: An integer from 0 (extremely rare or unused) to 5 (extremely common).
+4. Sentiment: An integer ranging from -5 (extremely negative) to 5 (extremely positive) that reflects the word’s emotional tone.
+5. Formality: An integer from 0 (extremely informal) to 5 (highly formal).
+6. Cultural Sensitivity: An integer from 0 (potentially culturally insensitive or laden with stereotypes) to 5 (culturally neutral or widely acceptable).
+7. Figurativeness: An integer from 0 (strictly literal) to 5 (almost exclusively metaphorical).
+8. Complexity: An integer from 0 (simple) to 5 (highly conceptually or structurally complex).
+9. Political Association: An integer from 0 (no political association) to 5 (highly politicized or common in political discourse).
+10. Word Types: One or more categories chosen from the following list: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article. Use a forward-slash (""/"") to separate multiple types. If the word is invalid, output ""invalid"" here and set all numerical fields to 0.
+
+Process each word exactly once, in the order provided. Do not output headers, extra explanations, additional spaces, or any duplicated field information.
 
 Here is the list of words:
 ";
