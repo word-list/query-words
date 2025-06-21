@@ -17,6 +17,8 @@ public class Function
 
         log.Info($"Entering QueryWords FunctionHandler with {input.Records.Count} message(s)");
 
+        await PromptFactory.InitialiseAsync().ConfigureAwait(false);
+
         var incomingMessages = MessageQueues.QueryWords.Receive(input, log);
 
         var querier = new WordQuerier(context.Logger);
