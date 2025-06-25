@@ -9,7 +9,7 @@ public static class PromptFactory
 {
     private static List<WordAttribute>? s_attributes;
 
-    private static string s_promptHeader = @"You are provided with a list of words. For each word, output exactly one CSV line with the following 10 fields, in the order given, separated by commas:";
+    private static string s_promptHeader = @"You are provided with a list of words. For each word, output exactly one CSV line with the following fields, in the order given, separated by commas:";
 
     private static string s_promptFooter = @"Process each word exactly once, in the order provided. Do not output headers, extra explanations, additional spaces, or any duplicated field information.";
 
@@ -28,18 +28,20 @@ public static class PromptFactory
         var promptBuilder = new StringBuilder();
 
         promptBuilder.AppendLine(s_promptHeader);
-
-
-        promptBuilder.AppendLine(s_promptFooter);
         promptBuilder.AppendLine();
+
+        promptBuilder.AppendLine("1. Word: The original word.");
 
         for (var i = 0; i < s_attributes.Count; i++)
         {
             var attribute = s_attributes[i];
-            promptBuilder.AppendLine($"{i + 1}. {attribute.Display}: {attribute.GetSubstitutedPrompt()}");
+            promptBuilder.AppendLine($"{i + 2}. {attribute.Display}: {attribute.GetSubstitutedPrompt()}");
         }
 
         promptBuilder.AppendLine();
+        promptBuilder.AppendLine(s_promptFooter);
+        promptBuilder.AppendLine();
+
         promptBuilder.AppendLine("Here is the list of words:");
         promptBuilder.AppendLine(string.Join(", ", words));
 
