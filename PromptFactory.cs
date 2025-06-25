@@ -38,6 +38,8 @@ public static class PromptFactory
             promptBuilder.AppendLine($"{i + 2}. {attribute.Display}: {attribute.GetSubstitutedPrompt()}");
         }
 
+        promptBuilder.AppendLine($"{s_attributes.Count + 2}: Word Types.  The  word types for the word, separated by forward slashes. Word types must be simple word types e.g. noun, adjective, verb.");
+
         promptBuilder.AppendLine();
         promptBuilder.AppendLine(s_promptFooter);
         promptBuilder.AppendLine();
