@@ -1,6 +1,6 @@
 using System.Text;
-using WordList.Data.Sql;
-using WordList.Data.Sql.Models;
+using WordList.Common.Words;
+using WordList.Common.Words.Models;
 using WordList.Processing.QueryWords.Models;
 
 namespace WordList.Processing.QueryWords;
@@ -21,9 +21,7 @@ public static class PromptFactory
     public static Prompt GetPrompt(IEnumerable<string> words)
     {
         if (s_attributes is null)
-        {
             throw new InvalidOperationException("PromptFactory has not been initialised. Call InitialiseAsync() first.");
-        }
 
         var promptBuilder = new StringBuilder();
 

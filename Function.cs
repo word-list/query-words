@@ -6,6 +6,7 @@ using Amazon.Lambda.SQSEvents;
 using WordList.Processing.QueryWords.Models;
 using WordList.Common.Json;
 using WordList.Common.Messaging;
+using WordList.Common.Status;
 
 namespace WordList.Processing.QueryWords;
 
@@ -19,16 +20,22 @@ public class Function
 
         await PromptFactory.InitialiseAsync().ConfigureAwait(false);
 
-        var incomingMessages = MessageQueues.QueryWords.Receive(input, log);
+        var incomingMessages = MessageQueues.QueryWords.Receive(input, log).GroupBy(message => message.CorrelationId);
 
-        var querier = new WordQuerier(context.Logger);
-
-        foreach (var message in incomingMessages.Where(msg => msg is not null))
+        foreach (var grouping in incomingMessages)
         {
-            querier.Add(message.Word);
-        }
+            log.Info($"Processing {grouping.Count()} messages with CorrelationId: {grouping.Key}");
 
-        await querier.CreateAllBatchQueriesAsync().ConfigureAwait(false);
+            var status = new StatusClient(grouping.Key);
+            var querier = new WordQuerier(status, context.Logger);
+
+            foreach (var message in grouping.Where(msg => msg is not null))
+            {
+                querier.Add(message.Word);
+            }
+
+            await querier.CreateAllBatchQueriesAsync().ConfigureAwait(false);
+        }
 
         return "ok";
     }

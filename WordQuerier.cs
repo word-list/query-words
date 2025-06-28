@@ -4,6 +4,7 @@ using WordList.Processing.QueryWords.Models;
 using WordList.Processing.QueryWords.OpenAI;
 
 using WordList.Common.OpenAI.Models;
+using WordList.Common.Status;
 
 namespace WordList.Processing.QueryWords;
 
@@ -15,16 +16,17 @@ public class WordQuerier
 
     private List<string> _words = [];
     private BatchCreator _batchCreator;
+    public StatusClient Status { get; init; }
 
 
-
-    public WordQuerier(ILambdaLogger logger)
+    public WordQuerier(StatusClient status, ILambdaLogger logger)
     {
+        Status = status;
         Logger = logger;
 
         var apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new Exception("OPENAI_API_KEY must be defined");
 
-        _batchCreator = new BatchCreator(apiKey, Logger, s_db);
+        _batchCreator = new BatchCreator(status, apiKey, Logger, s_db);
     }
 
     public void Add(string word)
@@ -33,9 +35,7 @@ public class WordQuerier
     }
 
     private async Task<(Prompt[], BatchStatus?)> CreateBatchAsync(Prompt[] prompts)
-    {
-        return (prompts, await _batchCreator.CreateBatchAsync(prompts));
-    }
+        => (prompts, await _batchCreator.CreateBatchAsync(prompts));
 
     public async Task CreateAllBatchQueriesAsync()
     {

@@ -4,6 +4,8 @@ using WordList.Processing.QueryWords.Models;
 
 using WordList.Common.OpenAI;
 using WordList.Common.OpenAI.Models;
+using WordList.Common.Status;
+using WordList.Common.Status.Models;
 
 namespace WordList.Processing.QueryWords.OpenAI;
 
@@ -12,15 +14,17 @@ public class BatchCreator
     private OpenAIClient _openAI;
     protected ILambdaLogger Logger { get; init; }
     private DynamoDBContext _db;
+    public StatusClient Status { get; init; }
 
     protected string BatchesTableName { get; set; }
     protected string PromptsTableName { get; set; }
     protected int MaxTries { get; set; } = 3;
     protected string OpenAIModelName { get; set; }
 
-    public BatchCreator(string apiKey, ILambdaLogger logger, DynamoDBContext db)
+    public BatchCreator(StatusClient status, string apiKey, ILambdaLogger logger, DynamoDBContext db)
     {
         Logger = logger;
+        Status = status;
         _openAI = new(apiKey);
         _db = db;
         BatchesTableName = Environment.GetEnvironmentVariable("BATCHES_TABLE_NAME")
@@ -133,15 +137,16 @@ public class BatchCreator
             }
 
             var promptItems = prompts.Select(prompt => GetRequestItem(prompt.Text)).ToArray();
+            await Status.IncreaseTotalBatchesAsync(1).ConfigureAwait(false);
 
             await WriteBatchRecordAsync(batch, "Uploading").ConfigureAwait(false);
-            var fileInfo = await _openAI.CreateFileAsync("prompt.jsonl", promptItems)
+            var fileInfo = await _openAI.CreateFileAsync($"prompt-{batch.Id}.jsonl", promptItems).ConfigureAwait(false)
                 ?? throw new Exception("Failed to create batch file for an unknown reason");
 
             Logger.LogInformation($"Uploaded batch file has ID '{fileInfo.Id}'");
 
             await WriteBatchRecordAsync(batch, "Creating").ConfigureAwait(false);
-            var batchStatus = await _openAI.CreateBatchAsync(fileInfo.Id, "/v1/responses")
+            var batchStatus = await _openAI.CreateBatchAsync(fileInfo.Id, "/v1/responses").ConfigureAwait(false)
                 ?? throw new Exception("Failed to create the OpenAI batch for an unknown reason");
 
             batch.OpenAIBatchId = batchStatus.Id;
