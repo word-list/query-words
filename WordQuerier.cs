@@ -35,7 +35,7 @@ public class WordQuerier
     }
 
     private async Task<(Prompt[], BatchStatus?)> CreateBatchAsync(Prompt[] prompts)
-        => (prompts, await _batchCreator.CreateBatchAsync(prompts));
+        => (prompts, await _batchCreator.CreateBatchAsync(Status.StatusId, prompts));
 
     public async Task CreateAllBatchQueriesAsync()
     {
@@ -48,6 +48,7 @@ public class WordQuerier
         Logger.LogInformation($"Waiting for all batch tasks to complete");
 
         var createdBatches = await Task.WhenAll(tasks).ConfigureAwait(false);
+        await Status.IncreaseTotalBatchesAsync(createdBatches.Length).ConfigureAwait(false);
 
         Logger.LogInformation($"All batch tasks completed");
     }

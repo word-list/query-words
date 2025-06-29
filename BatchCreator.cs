@@ -117,11 +117,12 @@ public class BatchCreator
         return results.All(r => r);
     }
 
-    public async Task<BatchStatus?> CreateBatchAsync(Prompt[] prompts)
+    public async Task<BatchStatus?> CreateBatchAsync(string correlationId, Prompt[] prompts)
     {
         var batch = new Batch
         {
             Id = Guid.NewGuid().ToString(),
+            CorrelationId = correlationId,
             Status = "Initialising"
         };
 
